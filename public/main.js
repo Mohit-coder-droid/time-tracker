@@ -1,45 +1,39 @@
-// In main.js
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
+import { fileURLToPath } from 'url'; // Helper for file paths
 
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const Database = require('better-sqlite3');
-
-// Define the database connection.
-// This will create the file 'my_database.db' in a user-safe location.
-const dbPath = path.join(app.getPath('userData'), 'my_database.db');
-const db = new Database(dbPath);
-
-// Create a table for your data if it doesn't exist.
-// Run this once to set up your structure.
-db.exec(`
-  CREATE TABLE IF NOT EXISTS items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT
-  )
-`);
+// __dirname is not available in ES Modules, so we create it
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function createWindow() {
+  // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      // This is where we attach our 'waiter' script
-      preload: path.join(__dirname, 'preload.js'),
-    },
+    width: 1536 ,
+    height: 864,
   });
 
-  // Load your React app. 
-  // Make sure the URL is correct for your setup (often http://localhost:3000)
-  win.loadURL('http://localhost:3000'); 
+  // Load your React app.
+  // In development, it loads from the dev server.
+  // In production, it loads the built HTML file.
+  const startUrl = process.env.ELECTRON_START_URL || new URL(path.join(__dirname, '../dist/index.html'), 'file:').href;
+  win.loadURL(startUrl);
+
+  // Optional: Open the DevTools for debugging.
+  // win.webContents.openDevTools();
 }
 
-// === LISTENER FOR YOUR REACT APP ===
-// This is the 'kitchen' receiving an order from the 'waiter'
-ipcMain.handle('db:getAllItems', () => {
-  const stmt = db.prepare('SELECT * FROM items');
-  const items = stmt.all();
-  return items;
+app.whenReady().then(createWindow);
+
+// Quit when all windows are closed, except on macOS.
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
-app.whenReady().then(createWindow);
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
+});

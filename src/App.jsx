@@ -21,7 +21,7 @@ import {
 function App() {
   let initialTimeSlots = localStorage.getItem("time-tracker-initial-slots");
   if (initialTimeSlots) {
-    console.log(initialTimeSlots);
+    // console.log(initialTimeSlots);
     initialTimeSlots = JSON.parse(initialTimeSlots);
   } else {
     const initialTimeSlots = [
@@ -250,7 +250,7 @@ function App() {
   };
 
   const saveTime = () => {
-    savedDates[date] = data;
+    savedDates[formatDate(selectedDate)] = data;
   };
 
   const renderDailyView = () => (
@@ -710,7 +710,7 @@ function App() {
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl flex items-center justify-center">
               <Clock className="w-7 h-7 text-white" />
             </div>
-            Study Time Tracker Pro
+            Study Time Tracker
           </h1>
 
           {/* View Mode Tabs */}
